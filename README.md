@@ -3,7 +3,7 @@
 Live dashboard tracking daily vessel traffic through critical maritime chokepoints
 following the 2026 Iran war and the effective closure of the Strait of Hormuz.
 
-🌐 **[View Live Dashboard](https://YOUR-USERNAME.github.io/hormuz-dashboard/)**
+🌐 **[View Live Dashboard](https://data-innovation-for-africa.github.io/hormuz_impact_Africa/)**
 
 ---
 
