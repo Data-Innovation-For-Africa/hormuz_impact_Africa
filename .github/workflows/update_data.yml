@@ -1,0 +1,45 @@
+name: Update Dashboard Data
+
+on:
+  schedule:
+    # Every Tuesday at 14:00 UTC (after IMF PortWatch Tuesday 9am ET update)
+    - cron: '0 14 * * 2'
+  workflow_dispatch:
+    # Allow manual trigger from GitHub Actions UI anytime
+
+permissions:
+  contents: write
+
+jobs:
+  update-data:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install pandas numpy openpyxl requests
+
+      - name: Download latest data from IMF PortWatch
+        run: |
+          python3 scripts/download_data.py
+
+      - name: Process data → JSON + Excel
+        run: |
+          python3 scripts/process_data.py
+
+      - name: Commit and push updated files
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/
+          git diff --staged --quiet || git commit -m \
+            "Auto-update: data refresh $(date -u '+%Y-%m-%d %H:%M UTC')"
+          git push

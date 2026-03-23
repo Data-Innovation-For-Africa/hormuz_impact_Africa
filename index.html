@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Strait of Hormuz Crisis 2026 — Maritime Trade Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
+<style>
+:root {
+  --bg:      #0D1410;
+  --surface: #131A14;
+  --card:    #192019;
+  --card2:   #1D261D;
+  --border:  #27382A;
+  --borderL: #3A5040;
+  --green:   #00A86A;
+  --greenL:  #00D485;
+  --greenD:  #007A4D;
+  --greenF:  rgba(0,168,106,0.10);
+  --gold:    #F0A500;
+  --red:     #D94F3D;
+  --blue:    #3D9BE9;
+  --text:    #EDF4EE;
+  --muted:   #7A9E86;
+  --faint:   #3A5040;
+  --font:    'IBM Plex Sans', sans-serif;
+  --mono:    'IBM Plex Mono', monospace;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-weight: 400;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: radial-gradient(circle, rgba(0,168,106,0.04) 1px, transparent 1px);
+  background-size: 30px 30px;
+  pointer-events: none; z-index: 0;
+}
+
+/* top accent bar */
+.topbar { height: 4px; background: var(--green); }
+
+/* ── HEADER ── */
+header {
+  position: relative; z-index: 5;
+  background: linear-gradient(180deg, #090D0A 0%, var(--bg) 100%);
+  border-bottom: 1px solid var(--border);
+}
+.header-inner {
+  max-width: 1380px; margin: 0 auto;
+  padding: 28px 32px 22px;
+  display: grid;
+  grid-template-columns: 44px 1px 1fr auto;
+  gap: 24px; align-items: center;
+}
+
+/* geometric mark — no text */
+.mark {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 3px; width: 34px; flex-shrink: 0;
+}
+.mark span {
+  display: block; width: 15px; height: 15px;
+  border-radius: 2px; background: var(--green);
+}
+.mark span:nth-child(2) { opacity: 0.45; }
+.mark span:nth-child(3) { opacity: 0.70; }
+
+.h-div {
+  width: 1px; height: 52px;
+  background: linear-gradient(180deg, transparent, var(--border), transparent);
+}
+.header-copy {}
+.eyebrow {
+  font-size: 10px; font-weight: 500; letter-spacing: 3px;
+  text-transform: uppercase; color: var(--green);
+  display: flex; align-items: center; gap: 9px; margin-bottom: 7px;
+}
+.eyebrow::before { content: ''; width: 18px; height: 1px; background: var(--green); }
+h1 {
+  font-size: clamp(20px, 3.2vw, 38px);
+  font-weight: 700; line-height: 1.12; letter-spacing: -0.3px;
+}
+h1 em { font-style: normal; color: var(--green); }
+.header-sub {
+  margin-top: 7px; font-size: 13px;
+  color: var(--muted); line-height: 1.6; max-width: 540px;
+}
+.header-meta { text-align: right; flex-shrink: 0; }
+.live-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--greenF); border: 1px solid var(--greenD);
+  padding: 4px 12px; border-radius: 100px; margin-bottom: 8px;
+}
+.live-dot {
+  width: 6px; height: 6px; border-radius: 50%; background: var(--greenL);
+  animation: blink 2s ease-in-out infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+.live-badge span { font-size: 10px; font-weight: 600; letter-spacing: 1.5px; color: var(--greenL); }
+.m-date { font-family: var(--mono); font-size: 19px; font-weight: 500; }
+.m-info { font-size: 10px; color: var(--muted); margin-top: 3px; letter-spacing: 0.5px; }
+
+/* ── WAR BANNER ── */
+.war-banner {
+  background: linear-gradient(90deg, rgba(217,79,61,.13), rgba(217,79,61,.04) 70%, transparent);
+  border-top: 1px solid rgba(217,79,61,.35);
+  border-bottom: 1px solid rgba(217,79,61,.15);
+}
+.war-inner {
+  max-width: 1380px; margin: 0 auto;
+  padding: 9px 32px;
+  display: flex; align-items: center; gap: 12px;
+}
+.war-tag {
+  background: var(--red); color: #fff;
+  font-size: 9px; font-weight: 700; letter-spacing: 2px;
+  text-transform: uppercase; padding: 3px 9px; border-radius: 2px;
+  white-space: nowrap; flex-shrink: 0;
+}
+.war-msg { font-size: 12.5px; color: #E8A09A; }
+.war-msg strong { color: var(--red); font-weight: 600; }
+.war-aside { margin-left: auto; font-size: 10px; color: var(--muted); font-style: italic; flex-shrink: 0; }
+
+/* ── MAIN ── */
+main {
+  position: relative; z-index: 1;
+  max-width: 1380px; margin: 0 auto;
+  padding: 26px 32px 56px;
+}
+
+/* section label */
+.sec-lbl {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 12px; margin-top: 6px;
+}
+.sec-lbl::before {
+  content: ''; width: 3px; height: 16px;
+  background: var(--green); border-radius: 2px;
+}
+.sec-lbl span {
+  font-size: 10px; font-weight: 600; letter-spacing: 3px;
+  text-transform: uppercase; color: var(--green);
+}
+
+/* ── KPI GRID ── */
+.kpi-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 12px; margin-bottom: 26px;
+}
+.kpi-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 5px; overflow: hidden;
+  transition: border-color .2s, transform .2s, box-shadow .2s;
+}
+.kpi-card:hover {
+  border-color: var(--kc);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,0,0,.35);
+}
+.kpi-top {
+  padding: 13px 16px 11px; background: var(--card2);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 9px;
+}
+.kpi-bar { width: 4px; height: 24px; border-radius: 2px; background: var(--kc); }
+.kpi-name {
+  font-size: 11px; font-weight: 600; letter-spacing: 1.5px;
+  text-transform: uppercase; color: var(--kc);
+}
+.kpi-body { padding: 14px 16px; }
+.kpi-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 8px; }
+.kpi-lbl {
+  font-size: 9px; font-weight: 500; text-transform: uppercase;
+  letter-spacing: 1px; color: var(--muted); margin-bottom: 2px;
+}
+.kpi-val { font-family: var(--mono); font-size: 20px; font-weight: 500; line-height: 1; }
+.kpi-val small { font-family: var(--font); font-size: 11px; color: var(--muted); }
+.neg { color: var(--red); }
+.pos { color: var(--greenL); }
+.kpi-card.hm { --kc: var(--red);  }
+.kpi-card.cp { --kc: var(--blue); }
+.kpi-card.sz { --kc: var(--gold); }
+
+/* ── CHART CARD ── */
+.chart-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 5px; overflow: hidden; margin-bottom: 18px;
+}
+.chart-head {
+  padding: 16px 20px 13px; background: var(--card2);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: flex-start;
+  justify-content: space-between; gap: 16px; flex-wrap: wrap;
+}
+.ct { font-size: 13px; font-weight: 600; letter-spacing: .3px; }
+.cs { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.legend { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.leg {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--bg); color: var(--muted);
+  border: 1px solid var(--border);
+  font-family: var(--font); font-size: 10px; font-weight: 500;
+  letter-spacing: 1px; text-transform: uppercase;
+  padding: 4px 11px; border-radius: 100px; cursor: pointer;
+  transition: all .15s;
+}
+.leg:hover { border-color: var(--borderL); color: var(--text); }
+.leg .d {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--lc, var(--muted)); flex-shrink: 0;
+  transition: transform .15s;
+}
+.leg.on { background: color-mix(in srgb, var(--lc) 12%, transparent); border-color: var(--lc); color: var(--text); }
+.leg.on .d { transform: scale(1.3); }
+.leg.lh { --lc: var(--red);  }
+.leg.lc { --lc: var(--blue); }
+.leg.ls { --lc: var(--gold); }
+
+.chart-body { padding: 18px 20px 16px; }
+.chart-wrap { position: relative; height: 330px; }
+
+/* mini stats bar under each chart */
+.mini-stats {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 1px; background: var(--border);
+  border-radius: 4px; overflow: hidden; margin-top: 14px;
+}
+.ms-cell { background: var(--card2); padding: 10px 14px; text-align: center; }
+.ms-l {
+  font-size: 9px; font-weight: 600; letter-spacing: 1.5px;
+  text-transform: uppercase; color: var(--muted); margin-bottom: 3px;
+}
+.ms-v { font-family: var(--mono); font-size: 15px; font-weight: 500; }
+
+/* ── DOWNLOAD ── */
+.dl-bar {
+  display: grid; grid-template-columns: 1fr auto;
+  align-items: center; gap: 20px;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 5px; padding: 20px 24px; margin-top: 22px;
+}
+.dl-h { font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+.dl-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 7px; }
+.dl-tag {
+  display: inline-flex; align-items: center;
+  background: var(--greenF); border: 1px solid var(--greenD);
+  padding: 2px 9px; border-radius: 100px;
+  font-size: 9px; font-weight: 600; letter-spacing: 1.5px;
+  text-transform: uppercase; color: var(--green);
+}
+.dl-p { font-size: 11.5px; color: var(--muted); line-height: 1.55; }
+.dl-btn {
+  display: inline-flex; align-items: center; gap: 9px;
+  background: var(--green); color: #000;
+  font-family: var(--font); font-size: 12px; font-weight: 700;
+  letter-spacing: 1.5px; text-transform: uppercase;
+  text-decoration: none; padding: 12px 24px; border-radius: 4px;
+  white-space: nowrap; transition: background .15s, transform .15s;
+}
+.dl-btn:hover { background: var(--greenL); transform: translateY(-1px); }
+.dl-btn svg { width: 15px; height: 15px; flex-shrink: 0; }
+
+/* ── FOOTER ── */
+footer {
+  position: relative; z-index: 1;
+  background: var(--surface); border-top: 1px solid var(--border);
+  padding: 16px 32px;
+}
+.foot {
+  max-width: 1380px; margin: 0 auto;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 20px; flex-wrap: wrap;
+}
+.foot-mark {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 2px; width: 18px; flex-shrink: 0;
+}
+.foot-mark span {
+  display: block; width: 8px; height: 8px;
+  border-radius: 1px; background: var(--green);
+}
+.foot-mark span:nth-child(2) { opacity: .45; }
+.foot-mark span:nth-child(3) { opacity: .70; }
+.foot-left { display: flex; align-items: center; gap: 10px; }
+.foot-txt { font-size: 11px; color: var(--muted); line-height: 1.4; }
+.foot-src { font-size: 11px; color: var(--muted); text-align: center; max-width: 480px; line-height: 1.5; }
+.foot-right { font-size: 10px; color: var(--faint); text-align: right; }
+.foot-right em { color: var(--green); font-style: normal; }
+
+/* animations */
+.fu { animation: fu .5s ease both; }
+.fu.d1 { animation-delay: .05s; }
+.fu.d2 { animation-delay: .12s; }
+.fu.d3 { animation-delay: .19s; }
+.fu.d4 { animation-delay: .26s; }
+.fu.d5 { animation-delay: .33s; }
+@keyframes fu { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
+
+@media (max-width: 960px) {
+  .kpi-grid            { grid-template-columns: 1fr; }
+  .header-inner        { grid-template-columns: 1fr; gap: 14px; }
+  .h-div               { display: none; }
+  .header-meta         { text-align: left; }
+  main                 { padding: 18px 16px 40px; }
+  .dl-bar              { grid-template-columns: 1fr; }
+  .mini-stats          { grid-template-columns: 1fr 1fr; }
+  .war-aside           { display: none; }
+  .foot                { flex-direction: column; align-items: flex-start; }
+}
+</style>
+</head>
+<body>
+
+<div class="topbar"></div>
+
+<!-- HEADER -->
+<header>
+  <div class="header-inner">
+
+    <div class="mark">
+      <span></span><span></span><span></span><span></span>
+    </div>
+
+    <div class="h-div"></div>
+
+    <div class="header-copy">
+      <div class="eyebrow">Maritime Trade Intelligence</div>
+      <h1>Strait of <em>Hormuz</em> Crisis 2026<br>Impact on Global Shipping Routes</h1>
+      <p class="header-sub">
+        Daily vessel traffic through three critical maritime chokepoints.
+        IMF PortWatch AIS satellite data — updated weekly every Tuesday.
+      </p>
+    </div>
+
+    <div class="header-meta">
+      <div class="live-badge"><div class="live-dot"></div><span>Live Data</span></div>
+      <div class="m-date" id="meta-date">—</div>
+      <div class="m-info" id="meta-days">Loading…</div>
+      <div class="m-info">IMF PortWatch · AIS Satellite</div>
+    </div>
+
+  </div>
+</header>
+
+<!-- WAR BANNER -->
+<div class="war-banner">
+  <div class="war-inner">
+    <div class="war-tag">⚠ War Event</div>
+    <div class="war-msg">
+      <strong>February 28, 2026</strong> — US-Israel military strikes on Iran.
+      IRGC declares Strait of Hormuz <strong>closed</strong>.
+      Vessel traffic collapsed to near zero within 72 hours.
+    </div>
+    <div class="war-aside">⚠ Post-Feb 28: AIS data partially degraded (GPS jamming &amp; blackouts)</div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<main>
+
+  <!-- KPIs -->
+  <div class="sec-lbl fu d1"><span>Situational Overview — Jan 2026 to present</span></div>
+  <div class="kpi-grid">
+
+    <div class="kpi-card hm fu d2">
+      <div class="kpi-top"><div class="kpi-bar"></div><div class="kpi-name">Strait of Hormuz</div></div>
+      <div class="kpi-body"><div class="kpi-grid2">
+        <div><div class="kpi-lbl">Latest</div><div class="kpi-val neg" id="kh-lat">—</div></div>
+        <div><div class="kpi-lbl">Pre-war avg</div><div class="kpi-val" id="kh-pre">—</div></div>
+        <div><div class="kpi-lbl">Post-war avg</div><div class="kpi-val neg" id="kh-post">—</div></div>
+        <div><div class="kpi-lbl">Change</div><div class="kpi-val neg" id="kh-chg">—</div></div>
+      </div></div>
+    </div>
+
+    <div class="kpi-card cp fu d3">
+      <div class="kpi-top"><div class="kpi-bar"></div><div class="kpi-name">Cape of Good Hope</div></div>
+      <div class="kpi-body"><div class="kpi-grid2">
+        <div><div class="kpi-lbl">Latest</div><div class="kpi-val pos" id="kc-lat">—</div></div>
+        <div><div class="kpi-lbl">Pre-war avg</div><div class="kpi-val" id="kc-pre">—</div></div>
+        <div><div class="kpi-lbl">Post-war avg</div><div class="kpi-val pos" id="kc-post">—</div></div>
+        <div><div class="kpi-lbl">Change</div><div class="kpi-val pos" id="kc-chg">—</div></div>
+      </div></div>
+    </div>
+
+    <div class="kpi-card sz fu d4">
+      <div class="kpi-top"><div class="kpi-bar"></div><div class="kpi-name">Suez Canal</div></div>
+      <div class="kpi-body"><div class="kpi-grid2">
+        <div><div class="kpi-lbl">Latest</div><div class="kpi-val" id="ks-lat">—</div></div>
+        <div><div class="kpi-lbl">Pre-war avg</div><div class="kpi-val" id="ks-pre">—</div></div>
+        <div><div class="kpi-lbl">Post-war avg</div><div class="kpi-val" id="ks-post">—</div></div>
+        <div><div class="kpi-lbl">Change</div><div class="kpi-val" id="ks-chg">—</div></div>
+      </div></div>
+    </div>
+
+  </div>
+
+  <!-- Chart 1 — Daily -->
+  <div class="sec-lbl fu d3"><span>Daily Vessel Count — n_total raw transit</span></div>
+  <div class="chart-card fu d4">
+    <div class="chart-head">
+      <div>
+        <div class="ct">Daily Number of Ships per Chokepoint</div>
+        <div class="cs">Total vessels transiting per day · Jan 2026 – present · IMF PortWatch AIS</div>
+      </div>
+      <div class="legend">
+        <button class="leg lh on" data-ch="daily" data-i="0"><span class="d"></span>Hormuz</button>
+        <button class="leg lc on" data-ch="daily" data-i="1"><span class="d"></span>Cape</button>
+        <button class="leg ls on" data-ch="daily" data-i="2"><span class="d"></span>Suez</button>
+      </div>
+    </div>
+    <div class="chart-body">
+      <div class="chart-wrap"><canvas id="cd"></canvas></div>
+      <div class="mini-stats" id="ms-daily"></div>
+    </div>
+  </div>
+
+  <!-- Chart 2 — MA7 -->
+  <div class="sec-lbl fu d4"><span>7-Day Moving Average — Smoothed trend</span></div>
+  <div class="chart-card fu d5">
+    <div class="chart-head">
+      <div>
+        <div class="ct">7-Day Centred Moving Average</div>
+        <div class="cs">Removes daily noise to reveal underlying trends · Jan 2026 – present · IMF PortWatch AIS</div>
+      </div>
+      <div class="legend">
+        <button class="leg lh on" data-ch="ma7" data-i="0"><span class="d"></span>Hormuz</button>
+        <button class="leg lc on" data-ch="ma7" data-i="1"><span class="d"></span>Cape</button>
+        <button class="leg ls on" data-ch="ma7" data-i="2"><span class="d"></span>Suez</button>
+      </div>
+    </div>
+    <div class="chart-body">
+      <div class="chart-wrap"><canvas id="cm"></canvas></div>
+      <div class="mini-stats" id="ms-ma7"></div>
+    </div>
+  </div>
+
+  <!-- Download -->
+  <div class="dl-bar fu d5">
+    <div>
+      <div class="dl-h">Download Full Analysis — Excel Workbook</div>
+      <div class="dl-tags">
+        <span class="dl-tag">Daily Ships</span>
+        <span class="dl-tag">7-Day MA</span>
+        <span class="dl-tag">Chart Daily</span>
+        <span class="dl-tag">Chart MA7</span>
+      </div>
+      <div class="dl-p">
+        4 sheets · Native Excel charts · Live formulas linking sheets.
+        Data current as of last weekly update. Charts refresh when data is edited.
+      </div>
+    </div>
+    <a href="data/hormuz_analysis.xlsx" download class="dl-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M12 16l-4-4h3V4h2v8h3l-4 4z"/>
+        <path d="M20 18H4"/>
+      </svg>
+      Download Excel
+    </a>
+  </div>
+
+</main>
+
+<!-- FOOTER -->
+<footer>
+  <div class="foot">
+
+    <div class="foot-left">
+      <div class="foot-mark">
+        <span></span><span></span><span></span><span></span>
+      </div>
+      <div class="foot-txt">
+        Maritime Trade Intelligence<br>
+        Hormuz Crisis Monitor · 2026
+      </div>
+    </div>
+
+    <div class="foot-src">
+      Data: <strong style="color:var(--text)">IMF PortWatch</strong> ·
+      Environmental Change Institute, University of Oxford ·
+      AIS satellite vessel tracking · Updated weekly (Tuesdays)<br>
+      <span style="color:var(--red); font-size:10px;">
+        ⚠ Post Feb 28 2026: AIS data partially degraded — GPS jamming &amp; vessel blackouts
+      </span>
+    </div>
+
+    <div class="foot-right" id="foot-gen">
+      Generated: —<br>
+      <em>Auto-updated via GitHub Actions</em>
+    </div>
+
+  </div>
+</footer>
+
+<script>
+Chart.register(window['chartjs-plugin-annotation']);
+
+const C = {
+  red:    '#D94F3D',
+  blue:   '#3D9BE9',
+  gold:   '#F0A500',
+  green:  '#00A86A',
+  muted:  '#7A9E86',
+  border: '#27382A',
+  bg:     '#192019',
+  text:   '#EDF4EE',
+};
+const CPS  = ['Strait of Hormuz', 'Cape of Good Hope', 'Suez Canal'];
+const CLRS = [C.red, C.blue, C.gold];
+let DATA = null, CD = null, CM = null;
+
+// ── Load JSON ──────────────────────────────────────────────────
+async function load() {
+  try {
+    const r = await fetch('data/dashboard_data.json?_=' + Date.now());
+    DATA = await r.json();
+    go();
+  } catch(e) {
+    console.error('Could not load data:', e);
+    document.querySelectorAll('.chart-wrap').forEach(el => {
+      el.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted);font-size:13px;letter-spacing:2px;text-transform:uppercase;">No data available</div>';
+    });
+  }
+}
+
+// ── Format date ────────────────────────────────────────────────
+function fmt(iso) {
+  return new Date(iso + 'T00:00:00')
+    .toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+}
+
+// ── Main render ────────────────────────────────────────────────
+function go() {
+  const m = DATA.meta;
+  document.getElementById('meta-date').textContent =
+    m.updated_fmt;
+  document.getElementById('meta-days').textContent =
+    `${m.n_days} days · Jan 2026 – ${m.updated_fmt}`;
+  document.getElementById('foot-gen').innerHTML =
+    `Generated: ${m.generated}<br><em>Auto-updated via GitHub Actions</em>`;
+
+  // KPI cards
+  [['kh', 'Strait of Hormuz'], ['kc', 'Cape of Good Hope'], ['ks', 'Suez Canal']]
+    .forEach(([id, cp]) => {
+      const s = DATA.stats[cp], c = s.pct_change;
+      document.getElementById(`${id}-lat`).textContent  = s.latest   + ' ships';
+      document.getElementById(`${id}-pre`).textContent  = s.pre_avg  + ' /day';
+      document.getElementById(`${id}-post`).textContent = s.post_avg + ' /day';
+      const el = document.getElementById(`${id}-chg`);
+      el.textContent = (c >= 0 ? '+' : '') + c + '%';
+      el.className   = 'kpi-val ' + (c < -5 ? 'neg' : c > 5 ? 'pos' : '');
+    });
+
+  const wi = DATA.dates.indexOf('2026-02-28');
+  const lb = DATA.dates.map(fmt);
+  CD = mkChart('cd', CD, lb, DATA.daily, wi, 'Ships / Day',        false);
+  CM = mkChart('cm', CM, lb, DATA.ma7,   wi, 'Ships / Day (7-day MA)', true);
+  mkStats('ms-daily', DATA.daily, DATA.dates);
+  mkStats('ms-ma7',   DATA.ma7,   DATA.dates);
+}
+
+// ── Build chart ────────────────────────────────────────────────
+function mkChart(id, old, lb, obj, wi, yl, smooth) {
+  if (old) old.destroy();
+
+  const datasets = CPS.map((cp, i) => ({
+    label: cp,
+    data:  obj[cp],
+    borderColor:              CLRS[i],
+    backgroundColor:          CLRS[i] + '14',
+    borderWidth:              i === 0 ? 2.5 : 2,
+    tension:                  smooth ? 0.3 : 0.15,
+    fill:                     true,
+    pointRadius:              0,
+    pointHoverRadius:         5,
+    pointHoverBackgroundColor: CLRS[i],
+    pointHoverBorderColor:    '#fff',
+    pointHoverBorderWidth:    2,
+  }));
+
+  const warAnnotation = wi >= 0 ? {
+    type: 'line', xMin: wi, xMax: wi,
+    borderColor: '#D94F3D', borderWidth: 1.5, borderDash: [5, 4],
+    label: {
+      display: true,
+      content: ['⚠ War Start', 'Feb 28, 2026'],
+      position: 'start',
+      backgroundColor: 'rgba(217,79,61,.92)',
+      color: '#fff',
+      font: [
+        { family: "'IBM Plex Sans'", size: 10, weight: '700' },
+        { family: "'IBM Plex Sans'", size: 9,  weight: '400' },
+      ],
+      padding: { x: 8, y: 5 },
+      borderRadius: 3, yAdjust: 12,
+    },
+  } : {};
+
+  return new Chart(document.getElementById(id), {
+    type: 'line',
+    data: { labels: lb, datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      animation: { duration: 700, easing: 'easeInOutQuart' },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#0D1410', borderColor: '#27382A', borderWidth: 1,
+          titleColor: C.text, bodyColor: C.muted, padding: 12,
+          titleFont: { family: "'IBM Plex Sans'", size: 12, weight: '600' },
+          bodyFont:  { family: "'IBM Plex Mono'", size: 12 },
+          callbacks: { label: c => `  ${c.dataset.label}: ${c.parsed.y} ships` },
+        },
+        annotation: { annotations: { warLine: warAnnotation } },
+      },
+      scales: {
+        x: {
+          grid:  { color: 'rgba(39,56,42,.7)', drawBorder: false },
+          ticks: { color: C.muted, maxRotation: 0,
+                   font: { family: "'IBM Plex Mono'", size: 10 }, maxTicksLimit: 15 },
+        },
+        y: {
+          min: 0,
+          grid:  { color: 'rgba(39,56,42,.7)', drawBorder: false },
+          ticks: { color: C.muted, font: { family: "'IBM Plex Mono'", size: 10 } },
+          title: { display: true, text: yl, color: C.muted,
+                   font: { family: "'IBM Plex Sans'", size: 11 } },
+        },
+      },
+    },
+  });
+}
+
+// ── Mini stats bar ─────────────────────────────────────────────
+function mkStats(id, obj, dates) {
+  const el = document.getElementById(id); if (!el) return;
+  const wi  = dates.indexOf('2026-02-28');
+  const avg = a => a.length ? a.reduce((x, y) => x + y, 0) / a.length : 0;
+  const hp  = obj['Strait of Hormuz'].slice(0, wi).filter(v => v > 0);
+  const hq  = obj['Strait of Hormuz'].slice(wi).filter(v => v > 0);
+  const cp  = obj['Cape of Good Hope'].slice(0, wi).filter(v => v > 0);
+  const cq  = obj['Cape of Good Hope'].slice(wi).filter(v => v > 0);
+  const hpA = avg(hp), hqA = avg(hq), cpA = avg(cp), cqA = avg(cq);
+  const hd  = hpA > 0 ? ((hqA / hpA - 1) * 100).toFixed(1) : 0;
+  const cd  = cpA > 0 ? ((cqA / cpA - 1) * 100).toFixed(1) : 0;
+  el.innerHTML = `
+    <div class="ms-cell">
+      <div class="ms-l">Hormuz Pre-war</div>
+      <div class="ms-v">${hpA.toFixed(1)}<span style="font-size:10px;color:var(--muted)"> /day</span></div>
+    </div>
+    <div class="ms-cell">
+      <div class="ms-l">Hormuz Post-war</div>
+      <div class="ms-v neg">${hqA.toFixed(1)}<span style="font-size:10px;color:var(--muted)"> /day</span></div>
+    </div>
+    <div class="ms-cell">
+      <div class="ms-l">Hormuz Change</div>
+      <div class="ms-v neg">${hd}%</div>
+    </div>
+    <div class="ms-cell">
+      <div class="ms-l">Cape Change</div>
+      <div class="ms-v pos">${cd > 0 ? '+' : ''}${cd}%</div>
+    </div>`;
+}
+
+// ── Series toggle ──────────────────────────────────────────────
+document.querySelectorAll('.leg').forEach(b => {
+  b.addEventListener('click', () => {
+    const chart = b.dataset.ch === 'daily' ? CD : CM;
+    if (!chart) return;
+    b.classList.toggle('on');
+    chart.getDatasetMeta(+b.dataset.i).hidden = !b.classList.contains('on');
+    chart.update();
+  });
+});
+
+load();
+</script>
+</body>
+</html>

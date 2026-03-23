@@ -1,0 +1,13 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.env
+
+# Large CSV — replace with your own download
+# The GitHub Action will auto-download fresh data each week
+data/*.csv
+
+# OS
+.DS_Store
+Thumbs.db
