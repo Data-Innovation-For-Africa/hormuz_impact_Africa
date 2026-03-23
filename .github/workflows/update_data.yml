@@ -1,45 +1,93 @@
-name: Update Dashboard Data
+name: Update Dashboard
+
+# ──────────────────────────────────────────────────────────────
+# TRIGGERS — the pipeline runs in 3 situations:
+#
+#  1. AUTOMATIC (weekly) — every Tuesday 14:00 UTC
+#     GitHub tries to download the latest CSV from IMF PortWatch.
+#     If download succeeds → process → update dashboard + Excel.
+#     If download fails    → process existing CSV → still updates.
+#
+#  2. MANUAL FILE PUSH — whenever you push a new CSV to data/
+#     Git detects the change and immediately runs the full pipeline.
+#     Just drop the new CSV in data/ and push — everything else
+#     is handled automatically.
+#
+#  3. MANUAL TRIGGER — run on demand from GitHub Actions UI
+#     GitHub → Actions → Update Dashboard → Run workflow
+# ──────────────────────────────────────────────────────────────
 
 on:
+  # Trigger 1: weekly schedule
   schedule:
-    # Every Tuesday at 14:00 UTC (after IMF PortWatch Tuesday 9am ET update)
-    - cron: '0 14 * * 2'
+    - cron: '0 14 * * 2'   # Every Tuesday at 14:00 UTC
+
+  # Trigger 2: CSV file pushed to repo
+  push:
+    paths:
+      - 'data/Daily_Chokepoint_Transit_Calls_and_Trade_Volume_Estimates.csv'
+
+  # Trigger 3: manual run from GitHub UI
   workflow_dispatch:
-    # Allow manual trigger from GitHub Actions UI anytime
 
 permissions:
   contents: write
 
 jobs:
-  update-data:
+  update:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
+
     steps:
 
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Python
+      - name: Set up Python 3.11
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+          cache: 'pip'
 
       - name: Install dependencies
-        run: |
-          pip install pandas numpy openpyxl requests
+        run: pip install pandas numpy openpyxl requests
 
-      - name: Download latest data from IMF PortWatch
-        run: |
-          python3 scripts/download_data.py
+      # ── Step 1: try to download latest CSV from IMF PortWatch ──
+      # If this fails (API down, network issue, etc.) the pipeline
+      # continues using whatever CSV is already in data/
+      - name: Download latest CSV from IMF PortWatch
+        run: python3 scripts/download_data.py
+        continue-on-error: true   # ← don't stop if download fails
 
-      - name: Process data → JSON + Excel
+      # ── Step 2: verify we have a CSV to work with ──────────────
+      - name: Check CSV exists
         run: |
-          python3 scripts/process_data.py
+          CSV="data/Daily_Chokepoint_Transit_Calls_and_Trade_Volume_Estimates.csv"
+          if [ ! -f "$CSV" ]; then
+            echo "❌ No CSV file found. Cannot proceed."
+            exit 1
+          fi
+          echo "✅ CSV found: $(wc -l < $CSV) lines, $(du -sh $CSV | cut -f1)"
 
-      - name: Commit and push updated files
+      # ── Step 3: process CSV → JSON + Excel ─────────────────────
+      - name: Process data → dashboard_data.json + hormuz_analysis.xlsx
+        run: python3 scripts/process_data.py
+
+      # ── Step 4: commit and push only changed output files ───────
+      # Never commits the large CSV (it's in .gitignore)
+      # Only commits: dashboard_data.json + hormuz_analysis.xlsx
+      - name: Commit and push updated outputs
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data/
-          git diff --staged --quiet || git commit -m \
-            "Auto-update: data refresh $(date -u '+%Y-%m-%d %H:%M UTC')"
-          git push
+
+          git add data/dashboard_data.json
+          git add data/hormuz_analysis.xlsx
+
+          if git diff --staged --quiet; then
+            echo "ℹ️  No changes in output files — nothing to commit."
+          else
+            git commit -m "🔄 Auto-update: $(date -u '+%Y-%m-%d %H:%M UTC')"
+            git push
+            echo "✅ Dashboard and Excel updated successfully."
+          fi
